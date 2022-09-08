@@ -1,0 +1,27 @@
+defaults:
+  - network: gasse_network
+
+instances:
+  co_class: 'capacitated_facility_location'
+  co_class_kwargs:
+    'n_customers': 5
+    'n_facilities': 5
+
+experiment:
+  seed: 0
+  device: 'cuda:0'
+  path_to_load_imitation_data: './'
+  path_to_save: './'
+  branching: 'explore_then_strong_branch' # 'pure_strong_branch' 'explore_then_strong_branch'
+  max_steps: null # None 3
+  num_samples: 120000
+  num_epochs: 1000
+  
+learner:
+  imitation_target: 'expert_actions' # 'expert_scores' 'expert_score' 'expert_actions' 'expert_bipartite_ranking'
+  loss_function: 'cross_entropy' # mean_squared_error cross_entropy jensen_shannon_distance kullback_leibler_divergence
+  lr: 0.0001
+  epoch_log_frequency: 1
+  checkpoint_log_frequency: 1
+  name: 'facil_supervised_learner'
+  

@@ -132,6 +132,7 @@ def run(cfg: DictConfig):
     # instances = iter(glob.glob(f'/scratch/datasets/retro_branching/gasse_2019/custom_data/data/instances/setcover/general_500r_1000c_0.05d/*.lp'))
 
     # init save dir
+    path = "/home/al/prjs/retro_branching/outputs/explore_then_strong_branch/capacitated_facility_location/max_steps_None/capacitated_facility_location_n_customers_5_n_facilities_5/"
     path = init_save_dir(path, 'samples')
     print('Generating >={} samples in parallel on {} CPUs and saving to {}'.format(cfg.experiment.min_samples, NUM_CPUS, os.path.abspath(path)))
 
