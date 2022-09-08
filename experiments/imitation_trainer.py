@@ -39,8 +39,7 @@ def run(cfg: DictConfig):
 
     # get paths to labelled training and validation data
     folder_name = 'samples_1' # 'aggregated_samples' 'samples_1'
-    #path = cfg.experiment.path_to_load_imitation_data + f'/{cfg.experiment.branching}/{cfg.instances.co_class}/max_steps_{cfg.experiment.max_steps}/{gen_co_name(cfg.instances.co_class, cfg.instances.co_class_kwargs)}/samples/{folder_name}/'
-    path = "/home/al/prjs/retro_branching/outputs/explore_then_strong_branch/capacitated_facility_location/max_steps_None/capacitated_facility_location_n_customers_5_n_facilities_5/samples/samples_1/"
+    path = cfg.experiment.path_to_load_imitation_data
 
     print(f'Loading imitation data from {path}...')
     if not os.path.isdir(path):

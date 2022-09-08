@@ -101,14 +101,9 @@ def run_sampler(co_class, co_class_kwargs, branching, max_steps=None, instance=N
     return data_to_save
 
 def init_save_dir(path, name):
-    _path = path + name + '/'
-    counter = 1
-    foldername = '{}_{}/'
-    while os.path.isdir(_path+foldername.format(name, counter)):
-        counter += 1
-    foldername = foldername.format(name, counter)
-    Path(_path+foldername).mkdir(parents=True, exist_ok=True)
-    return _path+foldername
+    _path = path + '/' + name + '/'
+    Path(_path).mkdir(parents=True, exist_ok=True)
+    return _path
 
 
 @hydra.main(config_path='configs', config_name='config.yaml')
@@ -125,15 +120,15 @@ def run(cfg: DictConfig):
     print(f'~'*80)
 
 
-    path = cfg.experiment.path_to_save + f'/{cfg.experiment.branching}/{cfg.instances.co_class}/max_steps_{cfg.experiment.max_steps}/{gen_co_name(cfg.instances.co_class, cfg.instances.co_class_kwargs)}/'
+    path = cfg.experiment.path_to_save
 
     # (optional) load pre-generated instances (will automatically generate if set instances=None)
     instances = None
     # instances = iter(glob.glob(f'/scratch/datasets/retro_branching/gasse_2019/custom_data/data/instances/setcover/general_500r_1000c_0.05d/*.lp'))
 
     # init save dir
-    path = "/home/al/prjs/retro_branching/outputs/explore_then_strong_branch/capacitated_facility_location/max_steps_None/capacitated_facility_location_n_customers_5_n_facilities_5/"
-    path = init_save_dir(path, 'samples')
+    #path = "/home/al/prjs/retro_branching/outputs/explore_then_strong_branch/capacitated_facility_location/max_steps_None/capacitated_facility_location_n_customers_5_n_facilities_5/"
+    path = init_save_dir(path, 'dataset')
     print('Generating >={} samples in parallel on {} CPUs and saving to {}'.format(cfg.experiment.min_samples, NUM_CPUS, os.path.abspath(path)))
 
     epoch_counter, sample_counter, loop_counter = 0, 0, 0
