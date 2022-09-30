@@ -142,7 +142,7 @@ def extract_state_tensors_from_ecole_obs(obs, device):
     return (torch.from_numpy(obs.row_features.astype(np.float32)).to(device), 
             torch.LongTensor(obs.edge_features.indices.astype(np.int16)).to(device),
             torch.from_numpy(obs.edge_features.values.astype(np.float32)).to(device).unsqueeze(1),
-            torch.from_numpy(obs.column_features.astype(np.float32)).to(device))
+            torch.from_numpy(obs.variable_features.astype(np.float32)).to(device))
 
 
 
@@ -500,6 +500,11 @@ class ReinforcementLearningValidator:
                             inference_start_t.record()
                         else:
                             inference_start_t = time.time_ns()
+                        #print('-'*30)
+                        #print(len(obs))
+                        #for o in obs:
+                        #    print(o.shape)
+                        #print('-'*30)
                         action, action_idx = agent.action_select(action_set=action_set, obs=obs, munchausen_tau=0, epsilon=0, model=env.model, done=done, agent_idx=0)
                         if 'cuda' in self.device:
                             torch.cuda.synchronize(device=self.device)

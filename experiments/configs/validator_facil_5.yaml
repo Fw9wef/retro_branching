@@ -1,0 +1,39 @@
+defaults:
+  - _self_
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+
+environment:
+  observation_function: 'default'
+  information_function: 'default'
+  reward_function: 'default'
+  scip_params: 'gasse_2019'
+
+instances:
+  co_class: 'capacitated_facility_location'
+  co_class_kwargs:
+    n_customers: 5
+    n_facilities: 5
+  #co_class: 'combinatorial_auction'
+  #co_class_kwargs:
+    #n_items: 10
+    #n_bids: 50
+    
+validator:
+  threshold_difficulty: null
+  max_steps: 1000000000000
+  max_steps_agent: null
+  overwrite: True
+  
+experiment:
+  agent_name: 'il' # pseudocost_branching strong_branching scip_branching
+  #path_to_load_agent: '/root/prjs/retro_branching/outputs/facility_5_5/il/facil_supervised_learner/gnn/gnn_1/checkpoint_350/'
+  path_to_load_agent: '/root/prjs/retro_branching/outputs/agents/capacitated_facility_location_n_customers_5_n_facilities_5/il/'
+  path_to_load_instances: '/root/prjs/retro_branching/outputs/test/5x5/'
+  path_to_save: './outputs/facility_5_5_q/testing'
+  device: 'cuda:0' # cuda:0 cpu

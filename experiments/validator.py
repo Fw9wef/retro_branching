@@ -31,9 +31,9 @@ def run(cfg: DictConfig):
      
     # initialise the agent
     agents = {}
-    if cfg.experiment.agent_name not in set(['pseudocost_branching', 'strong_branching', 'scip_branching']):
+    if cfg.experiment.agent_name not in set(['pseudocost_branching', 'strong_branching', 'scip_branching', 'random']):
         # is an ML agent
-        path = cfg.experiment.path_to_load_agent + f'/{gen_co_name(cfg.instances.co_class, cfg.instances.co_class_kwargs)}/{cfg.experiment.agent_name}/'
+        path = cfg.experiment.path_to_load_agent
         config = path + 'config.json'
         agent = Agent(device=cfg.experiment.device, config=config, name=cfg.experiment.agent_name)
         for network_name, network in agent.get_networks().items():
@@ -51,7 +51,7 @@ def run(cfg: DictConfig):
         # is a standard heuristic
         cfg.experiment.device = 'cpu'
         agent = cfg.experiment.agent_name
-    path_to_save_baseline = cfg.experiment.path_to_save + f'/{gen_co_name(cfg.instances.co_class, cfg.instances.co_class_kwargs)}/{cfg.experiment.agent_name}/'
+    path_to_save_baseline = cfg.experiment.path_to_save
     agents[path_to_save_baseline] = agent
     print(f'Initialised agent and agent-to-path dict: {agents}')
 
@@ -105,6 +105,8 @@ def run_rl_validator(path,
                 def __init__(self):
                     self.name = 'scip_branching'
             agent = SCIPBranchingAgent()
+        elif agent == 'random':
+            agent = RandomAgent()
         else:
             raise Exception(f'Unrecognised agent str {agent}, cannot initialise.')
     
@@ -118,9 +120,6 @@ def run_rl_validator(path,
     # instances
     if instances_path is None:
         instances_path = f'/scratch/datasets/retro_branching/instances/'
-    instances_path += f'/{co_class}'
-    for key, val in co_class_kwargs.items():
-        instances_path += f'_{key}_{val}'
     files = glob.glob(instances_path+f'/*.mps')
     instances = iter([ecole.scip.Model.from_file(f) for f in files])
     print(instances)

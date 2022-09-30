@@ -1,5 +1,6 @@
 from retro_branching.utils import gen_co_name, ExploreThenStrongBranch, PureStrongBranch, seed_stochastic_modules_globally
 from retro_branching.scip_params import gasse_2019_scip_params, default_scip_params
+from retro_branching.utils import generate_craballoc
 
 import ecole
 
@@ -48,6 +49,8 @@ def run_sampler(co_class, co_class_kwargs, branching, max_steps=None, instance=N
             instances = ecole.instance.CapacitatedFacilityLocationGenerator(**co_class_kwargs)
         elif co_class == 'maximum_independent_set':
             instances = ecole.instance.IndependentSetGenerator(**co_class_kwargs)
+        elif co_class == 'crabs':
+            instances = generate_craballoc(**co_class_kwargs)
         else:
             raise Exception(f'Unrecognised co_class {co_class}')
         instance = next(instances)
