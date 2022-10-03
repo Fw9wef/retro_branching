@@ -1,6 +1,6 @@
 from retro_branching.utils import get_most_recent_checkpoint_foldername, gen_co_name
 from retro_branching.networks import BipartiteGCN
-from retro_branching.agents import Agent, REINFORCEAgent, PseudocostBranchingAgent, StrongBranchingAgent, RandomAgent, DQNAgent, DoubleDQNAgent
+from retro_branching.agents import Agent, REINFORCEAgent, TopKAgent, PseudocostBranchingAgent, StrongBranchingAgent, RandomAgent, DQNAgent, DoubleDQNAgent
 from retro_branching.environments import EcoleBranching, EcoleConfiguring
 from retro_branching.validators import ReinforcementLearningValidator
 
@@ -35,7 +35,10 @@ def run(cfg: DictConfig):
         # is an ML agent
         path = cfg.experiment.path_to_load_agent
         config = path + 'config.json'
-        agent = Agent(device=cfg.experiment.device, config=config, name=cfg.experiment.agent_name)
+        if cfg.experiment.agent_name == 'topk':
+            agent = TopKAgent(device=cfg.experiment.device, config=config, name=cfg.experiment.agent_name)
+        else:
+            agent = Agent(device=cfg.experiment.device, config=config, name=cfg.experiment.agent_name)
         for network_name, network in agent.get_networks().items():
             if network is not None:
                 try:

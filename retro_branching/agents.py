@@ -1,4 +1,5 @@
 from retro_branching.src.agents.agent import Agent
+from retro_branching.src.agents.topk_agent import TopKAgent
 from retro_branching.src.agents.random_agent import RandomAgent
 from retro_branching.src.agents.pseudocost_branching_agent import PseudocostBranchingAgent
 from retro_branching.src.agents.strong_branching_agent import StrongBranchingAgent
