@@ -1,6 +1,7 @@
 from retro_branching.utils import gen_co_name, ExploreThenStrongBranch, PureStrongBranch, seed_stochastic_modules_globally
 from retro_branching.scip_params import gasse_2019_scip_params, default_scip_params
 from retro_branching.utils import generate_craballoc
+from retro_branching.tsp_gen import tsp_instance_generator
 
 import ecole
 
@@ -51,6 +52,10 @@ def run_sampler(path, sample_n_queue, co_class, co_class_kwargs, branching, max_
                                                               **co_class_kwargs)
     elif co_class == 'crabs':
         instance_gen = generate_craballoc(**co_class_kwargs)
+
+    elif co_class == 'tsp':
+        instance_gen = tsp_instance_generator(**co_class_kwargs)
+
     else:
         raise Exception(f'Unrecognised co_class {co_class}')
 

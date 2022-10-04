@@ -4,6 +4,7 @@ from retro_branching.agents import DQNAgent
 from retro_branching.environments import EcoleBranching
 from retro_branching.learners import DQNLearner
 from retro_branching.utils import generate_craballoc
+from retro_branching.tsp_gen import tsp_instance_generator
 
 import ecole
 import torch
@@ -58,6 +59,8 @@ def run(cfg: DictConfig):
             instances = ecole.instance.IndependentSetGenerator(**cfg.instances.co_class_kwargs)
         elif cfg.instances.co_class == 'crabs':
             instances = generate_craballoc(**cfg.instances.co_class_kwargs)
+        elif cfg.instances.co_class == 'tsp':
+            instances = tsp_instance_generator(**cfg.instances.co_class_kwargs)
         else:
             raise Exception(f'Unrecognised co_class {cfg.instances.co_class}')
     print(f'Initialised instance generator.')
@@ -71,7 +74,7 @@ def run(cfg: DictConfig):
     
     init_save_dir(cfg.experiment.path_to_load_instances)
     # data generation
-    for i in trange(55, 100):
+    for i in trange(1000):
         done = True
         while done:
             instance = next(instances)

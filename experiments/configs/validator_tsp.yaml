@@ -15,21 +15,19 @@ environment:
   scip_params: 'gasse_2019'
 
 instances:
-  co_class: 'crabs'
+  co_class: 'tsp'
   co_class_kwargs:
-      n_months: 12
-      n_places: 20
-      n_ships: 35
-
+      n_nodes: 20
+    
 validator:
   threshold_difficulty: null
   max_steps: 1000000000000
   max_steps_agent: null
   overwrite: True
-
+  
 experiment:
-  agent_name: 'topk' # pseudocost_branching strong_branching scip_branching
-  path_to_load_agent: '/root/prjs/retro_branching/outputs/crabs_12_20_35_v/il/crabs_supervised_learner/gnn/gnn_0/checkpoint_213/'
-  path_to_load_instances: '/root/prjs/retro_branching/outputs/test/crabs_12_20_35_v/'
-  path_to_save: './outputs/crabs_12_20_35_v_topk/testing'
+  agent_name: 'strong_branching' # pseudocost_branching strong_branching scip_branching
+  path_to_load_agent: '/root/prjs/retro_branching/outputs/tsp_20/il/'
+  path_to_load_instances: '/root/prjs/retro_branching/outputs/test/tsp_20/'
+  path_to_save: './outputs/tsp_20/testing'
   device: 'cpu' # cuda:0 cpu
