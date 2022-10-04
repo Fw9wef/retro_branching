@@ -61,7 +61,7 @@ def run(cfg: DictConfig):
     if cfg.learner.loss_function == 'cross_entropy':
         loss_function = CrossEntropy()
     elif cfg.learner.loss_function == 'mean_squared_error':
-        loss_function = MeanSquaredError()
+        loss_function = MeanSquaredError(reduction='clip')
     elif cfg.learner.loss_function == 'jensen_shannon_distance':
         loss_function = JensenShannonDistance()
     elif cfg.learner.loss_function == 'kullback_leibler_divergence':

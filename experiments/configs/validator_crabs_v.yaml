@@ -9,7 +9,7 @@ hydra:
     dir: .
 
 environment:
-  observation_function: '19_var_features'
+  observation_function: 'default'
   information_function: 'default'
   reward_function: 'default'
   scip_params: 'gasse_2019'
@@ -31,5 +31,5 @@ experiment:
   agent_name: 'topk' # pseudocost_branching strong_branching scip_branching
   path_to_load_agent: '/root/prjs/retro_branching/outputs/crabs_12_20_35_v/il/crabs_supervised_learner/gnn/gnn_0/checkpoint_213/'
   path_to_load_instances: '/root/prjs/retro_branching/outputs/test/crabs_12_20_35_v/'
-  path_to_save: './outputs/crabs_12_20_35_v/testing'
-  device: 'cuda:1' # cuda:0 cpu
+  path_to_save: './outputs/crabs_12_20_35_v_topk/testing'
+  device: 'cpu' # cuda:0 cpu

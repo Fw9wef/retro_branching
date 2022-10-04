@@ -18,17 +18,17 @@ instances:
 
 experiment:
   seed: 0
-  device: 'cuda:0'
+  device: 'cuda:1'
   path_to_load_imitation_data: './outputs/crabs_12_20_35_v/dataset/'
-  path_to_save: './outputs/crabs_12_20_35_v/il/'
+  path_to_save: './outputs/crabs_12_20_35_v/il_scores/'
   branching: 'explore_then_strong_branch' # 'pure_strong_branch' 'explore_then_strong_branch'
   max_steps: null # None 3
   num_samples: 120000
   num_epochs: 1000
   
 learner:
-  imitation_target: 'expert_actions' # 'expert_scores' 'expert_score' 'expert_actions' 'expert_bipartite_ranking'
-  loss_function: 'cross_entropy' # mean_squared_error cross_entropy jensen_shannon_distance kullback_leibler_divergence
+  imitation_target: 'expert_scores' # 'expert_scores' 'expert_score' 'expert_actions' 'expert_bipartite_ranking'
+  loss_function: 'mean_squared_error' # mean_squared_error cross_entropy jensen_shannon_distance kullback_leibler_divergence
   lr: 0.0001
   epoch_log_frequency: 1
   checkpoint_log_frequency: 1
