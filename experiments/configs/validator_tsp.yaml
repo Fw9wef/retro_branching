@@ -26,8 +26,8 @@ validator:
   overwrite: True
   
 experiment:
-  agent_name: 'strong_branching' # pseudocost_branching strong_branching scip_branching
-  path_to_load_agent: '/root/prjs/retro_branching/outputs/tsp_20/il/'
-  path_to_load_instances: '/root/prjs/retro_branching/outputs/test/tsp_20/'
-  path_to_save: './outputs/tsp_20/testing'
+  agent_name: 'il' # pseudocost_branching strong_branching scip_branching
+  path_to_load_agent: '/root/prjs/retro_branching/outputs/tsp_20/il/tsp_supervised_learner/gnn/gnn_0/checkpoint_245/'
+  path_to_load_instances: '/root/prjs/retro_branching/outputs/test/tsp_40/'
+  path_to_save: './outputs/tsp_20_40/testing'
   device: 'cpu' # cuda:0 cpu

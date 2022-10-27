@@ -16,7 +16,7 @@ instances:
 
 experiment:
   seed: 0
-  device: 'cuda:0'
+  device: 'cuda:1'
   path_to_load_imitation_data: './outputs/tsp_20/dataset/'
   path_to_save: './outputs/tsp_20/il/'
   branching: 'explore_then_strong_branch' # 'pure_strong_branch' 'explore_then_strong_branch'

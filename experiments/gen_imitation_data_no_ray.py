@@ -136,7 +136,7 @@ def run(cfg: DictConfig):
     path = init_save_dir(path, 'dataset')
     print('Generating >={} samples in parallel on {} CPUs and saving to {}'.format(cfg.experiment.min_samples, n_parallel_process, os.path.abspath(path)))
 
-    ecole.seed(cfg.experiment.seed + 500)
+    ecole.seed(cfg.experiment.seed)
     sample_n_queue = Queue(maxsize=64)
 
     threads = list()
@@ -146,11 +146,11 @@ def run(cfg: DictConfig):
                                                    cfg.instances.co_class_kwargs,
                                                    cfg.experiment.branching,
                                                    cfg.experiment.max_steps,
-                                                   i+500))
+                                                   i))
         process.start()
         threads.append(process)
 
-    for i in trange(68570, cfg.experiment.min_samples):
+    for i in trange(cfg.experiment.min_samples):
         sample_n_queue.put(i)
         print(f'{i} of {cfg.experiment.min_samples} index queued up')
 
