@@ -33,6 +33,7 @@ def generate_craballoc(
     *,
     p: float = 0.9,
     seed: int = None,
+    minimize: bool = False,
 ):
     while True:
         instance = FixedScheduleCRopt.generate(
@@ -43,7 +44,19 @@ def generate_craballoc(
             p=p,
             seed=seed,
         )
-        yield Model.from_pyscipopt(setup(instance))
+
+        if not minimize:
+            m = setup(instance)
+
+        else:
+            instance.R *= -1
+            m = setup(instance)
+            assert m.getObjectiveSense() == "maximize"
+
+            m.setObjective(m.getObjective(), "minimize")
+            assert m.getObjectiveSense() == "minimize"
+
+        yield Model.from_pyscipopt(m)
 
 
 def gen_co_name(co_class, co_class_kwargs):
@@ -66,13 +79,13 @@ class SearchTree:
     of nodes processed by SCIP) will likely be more than the number of nodes in
     the search tree when an instance is solved.
     '''
-    def __init__(self, model):       
+    def __init__(self, model):
         self.tree = nx.DiGraph()
-        
+
         self.tree.graph['root_node'] = None
         self.tree.graph['visited_nodes'] = []
         self.tree.graph['visited_node_ids'] = OrderedSet()
-        
+
         m = model.as_pyscipopt()
         if m.getCurrentNode() is not None:
 
@@ -90,18 +103,18 @@ class SearchTree:
             self.step_idx = 0
 
             self.update_tree(model)
-            
+
         else:
             # instance was pre-solved
             pass
-            
+
     def update_tree(self, model):
         '''
         Call this method after each update to the ecole environment. Pass
         the updated ecole.Model, and the B&B tree tracker will be updated accordingly.
         '''
         m = model.as_pyscipopt()
-                
+
         # get current node (i.e. next node to be branched at)
         _curr_node = m.getCurrentNode()
         if _curr_node is not None:
@@ -109,17 +122,17 @@ class SearchTree:
         else:
             # branching finished, no curr node
             self.curr_node_id = None
-        
+
         if len(self.tree.graph['visited_node_ids']) >= 1:
             self.prev_node_id, self.prev_node = self.tree.graph['visited_node_ids'][-1], self.tree.graph['visited_nodes'][-1]
-            
+
             # check if previous branching at previous node changed global primal bound. If so, set previous node as optimum
             if m.getPrimalbound() < self.tree.graph['incumbent_primal_bound']:
                 # branching at previous node led to finding new incumbent solution
                 self.tree.graph['optimum_nodes'].append(self.prev_node)
                 self.tree.graph['optimum_node_ids'].add(self.prev_node_id)
                 self.tree.graph['incumbent_primal_bound'] = m.getPrimalbound()
-            
+
         self.curr_node = {self.curr_node_id: _curr_node}
         if self.curr_node_id is not None:
             if self.curr_node_id not in self.tree.graph['visited_node_ids']:
@@ -127,7 +140,7 @@ class SearchTree:
                 self.tree.graph['visited_nodes'].append(self.curr_node)
                 self.tree.graph['visited_node_ids'].add(self.curr_node_id)
                 self.tree.nodes[self.curr_node_id]['step_visited'] = self.step_idx
-        
+
         if self.curr_node_id is not None:
             _parent_node = list(self.curr_node.values())[0].getParent()
             if _parent_node is not None:
@@ -137,18 +150,18 @@ class SearchTree:
                 parent_node_id = None
             self.parent_node = {parent_node_id: _parent_node}
         else:
-            self.parent_node = {None: None} 
-            
+            self.parent_node = {None: None}
+
         # add open nodes to tree
         open_leaves, open_children, open_siblings = m.getOpenNodes()
         self.open_leaves = {node.getNumber(): node  for node in open_leaves}
         self.open_children = {node.getNumber(): node for node in open_children}
         self.open_siblings = {node.getNumber(): node for node in open_siblings}
-        
+
         self._add_nodes(self.open_leaves)
         self._add_nodes(self.open_children)
         self._add_nodes(self.open_siblings)
-        
+
         # check if previous branching at previous node led to fathoming
         if len(self.tree.graph['visited_node_ids']) > 2 or self.curr_node_id is None:
             if self.curr_node_id is not None:
@@ -186,7 +199,7 @@ class SearchTree:
                 else:
                     # is root node, has no parent
                     self.tree.graph['root_node'] = {node_id: node}
-                    
+
     def _get_node_groups(self):
         node_groups = defaultdict(lambda: [])
         for node in self.tree.nodes:
@@ -199,7 +212,7 @@ class SearchTree:
             if node == self.tree.graph['optimum_node_ids'][-1]:
                 node_groups['Incumbent'].append(node)
         return node_groups
-                                    
+
     def render(self,
                unvisited_node_colour='#FFFFFF',
                visited_node_colour='#A7C7E7',
@@ -217,14 +230,14 @@ class SearchTree:
             sns.set(rc={'text.usetex': True},
                     font='times')
         sns.set_theme(font_scale=font_scale, context=context, style=style)
-        
+
         group_to_colour = {'Unvisited': unvisited_node_colour,
                            'Visited': visited_node_colour,
                            'Fathomed': fathomed_node_colour,
                            'Incumbent': incumbent_node_colour}
-        
+
         f, ax = plt.subplots()
-        
+
         pos = graphviz_layout(self.tree, prog='dot')
 
         node_groups = self._get_node_groups()
@@ -235,7 +248,7 @@ class SearchTree:
                                    node_color=group_to_colour[group_label],
                                    edgecolors=node_edge_colour,
                                    label=group_label)
-            
+
         if self.curr_node_id is not None:
             nx.draw_networkx_nodes(self.tree,
                                    pos,
@@ -247,20 +260,20 @@ class SearchTree:
             num_groups = len(list(node_groups.keys())) + 1
         else:
             num_groups = len(list(node_groups.keys()))
-    
+
         nx.draw_networkx_edges(self.tree,
                                pos)
-        
+
         nx.draw_networkx_labels(self.tree, pos, labels={node: node for node in self.tree.nodes})
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=num_groups)
-        
+
         plt.show()
 
 ############################### HELPER FUNCTIONS #############################
-def seed_stochastic_modules_globally(default_seed=0, 
-                                     numpy_seed=None, 
-                                     random_seed=None, 
-                                     torch_seed=None, 
+def seed_stochastic_modules_globally(default_seed=0,
+                                     numpy_seed=None,
+                                     random_seed=None,
+                                     torch_seed=None,
                                      ecole_seed=None):
     '''Seeds any stochastic modules so get reproducible results.'''
     if numpy_seed is None:
@@ -288,17 +301,17 @@ def seed_stochastic_modules_globally(default_seed=0,
 def turn_off_scip_heuristics(ecole_instance):
     # write ecole instance to mps
     ecole_instance.write_problem('tmp_instance.mps')
-    
+
     # read mps into pyscip model
     pyscipopt_instance = pyscipopt.Model()
     pyscipopt_instance.readProblem('tmp_instance.mps')
-    
+
     # turn off heuristics
     pyscipopt_instance.setPresolve(pyscipopt.SCIP_PARAMSETTING.OFF)
     pyscipopt_instance.setHeuristics(pyscipopt.SCIP_PARAMSETTING.OFF)
     pyscipopt_instance.disablePropagation()
     pyscipopt_instance.setSeparating(pyscipopt.SCIP_PARAMSETTING.OFF)
-    
+
     return ecole.scip.Model.from_pyscipopt(pyscipopt_instance)
 
 
@@ -315,7 +328,7 @@ def pad_tensor(input_, pad_sizes, pad_value=-1e8):
 def get_most_recent_checkpoint_foldername(path, idx=-1):
     '''
     Given a path to a folders named <name>_<number>, will sort checkpoints (i.e. most recently saved checkpoint
-    last) and return name of idx provided (default idx=-1 to return 
+    last) and return name of idx provided (default idx=-1 to return
     most recent checkpoint folder).
     '''
     foldernames = [name.split('_') for name in os.listdir(path)]
@@ -331,7 +344,7 @@ def create_milp_curriculum(num_levels, init_matrix_size, final_matrix_size, dens
         num_levels (int): Number of difficulty levels in curriculum.
         init_matrix (list): Initial [nrows, ncols] MILP problem size at first level.
         final_matrix (list): Final [nrows, ncols] MILP problem size at final level.
-        
+
     Return:
         (dict): Maps level to problem size.
     '''
@@ -345,9 +358,9 @@ def create_milp_curriculum(num_levels, init_matrix_size, final_matrix_size, dens
     for level in range(1, num_levels-1):
         curriculum[level] = [curriculum[level-1][0]+nrows_delta, curriculum[level-1][1]+ncols_delta]
     curriculum[num_levels-1] = [final_nrows, final_ncols]
-    
+
     return curriculum
-    
+
 
 def check_if_network_params_equal(net_1, net_2):
     all_equal = True
@@ -356,7 +369,7 @@ def check_if_network_params_equal(net_1, net_2):
         print(f'{name_2}:\n{tensor_2}:')
         if not torch.equal(tensor_1, tensor_2):
             # not equal
-            all_equal = False 
+            all_equal = False
     return all_equal
 
 
@@ -369,17 +382,17 @@ def check_if_network_params_equal(net_1, net_2):
 ########################### PYTORCH DATA LOADERS #############################
 class BipartiteNodeData(torch_geometric.data.Data):
     """
-    This class encode a node bipartite graph observation as returned by the `ecole.observation.NodeBipartite` 
+    This class encode a node bipartite graph observation as returned by the `ecole.observation.NodeBipartite`
     observation function in a format understood by the pytorch geometric data handlers.
     """
-    def __init__(self, 
-                 constraint_features=None, 
-                 edge_indices=None, 
-                 edge_features=None, 
+    def __init__(self,
+                 constraint_features=None,
+                 edge_indices=None,
+                 edge_features=None,
                  variable_features=None,
-                 candidates=None, 
-                 candidate_choice=None, 
-                 candidate_scores=None, 
+                 candidates=None,
+                 candidate_choice=None,
+                 candidate_scores=None,
                  score=None):
         super().__init__()
         if constraint_features is not None:
@@ -402,7 +415,7 @@ class BipartiteNodeData(torch_geometric.data.Data):
 
     def __inc__(self, key, value, *args, **kwargs):
         """
-        We overload the pytorch geometric method that tells how to increment indices when concatenating graphs 
+        We overload the pytorch geometric method that tells how to increment indices when concatenating graphs
         for those entries (edge index, candidates) for which this is not obvious.
         """
         if key == 'edge_index':
@@ -432,8 +445,8 @@ class GraphDataset(torch_geometric.data.Dataset):
             sample = pickle.load(f)
 
         sample_observation, sample_action, sample_action_set, sample_scores = sample
-        
-        # We note on which variables we were allowed to branch, the scores as well as the choice 
+
+        # We note on which variables we were allowed to branch, the scores as well as the choice
         # taken by strong branching (relative to the candidates)
         candidates = torch.LongTensor(np.array(sample_action_set, dtype=np.int32))
         try:
@@ -445,13 +458,13 @@ class GraphDataset(torch_geometric.data.Dataset):
             candidate_scores = []
         candidate_choice = torch.where(candidates == sample_action)[0][0]
 
-        graph = BipartiteNodeData(sample_observation.row_features, sample_observation.edge_features.indices, 
+        graph = BipartiteNodeData(sample_observation.row_features, sample_observation.edge_features.indices,
                                   sample_observation.edge_features.values, sample_observation.variable_features,
                                   candidates, candidate_choice, candidate_scores, score)
-        
+
         # We must tell pytorch geometric how many nodes there are, for indexing purposes
         graph.num_nodes = sample_observation.row_features.shape[0]+sample_observation.variable_features.shape[0]
-        
+
         return graph
 
 
@@ -479,7 +492,7 @@ class PlotAesthetics:
                                       palette='colorblind',
                                       desat=1,
                                       dpi=300):
-        
+
         # record params
         self.context = context
         self.linewidth = linewidth
@@ -498,15 +511,15 @@ class PlotAesthetics:
                       style=style,
                       palette=palette)
 
-        
+
     def get_standard_fig_size(self,
-                              col_width=3.25, 
-                              col_spacing=0.25, 
+                              col_width=3.25,
+                              col_spacing=0.25,
                               n_cols=1,
                               scaling_factor=1,
                               width_scaling_factor=1,
                               height_scaling_factor=1):
-        
+
         # save params
         self.col_width = col_width
         self.col_spacing = col_spacing
@@ -514,7 +527,7 @@ class PlotAesthetics:
         self.scaling_factor=scaling_factor
         self.width_scaling_factor = width_scaling_factor
         self.height_scaling_factor = height_scaling_factor
-    
+
         # calc fig size
         self.fig_width = ((col_width * n_cols) + ((n_cols - 1) * col_spacing))
         golden_mean = (np.sqrt(5) - 1.0) / 2.0    # Aesthetic ratio
@@ -522,8 +535,8 @@ class PlotAesthetics:
         return (scaling_factor * width_scaling_factor * self.fig_width, scaling_factor * height_scaling_factor * self.fig_height)
 
     def get_winner_bar_fig_size(self,
-                                col_width=3.25, 
-                                col_spacing=0.25, 
+                                col_width=3.25,
+                                col_spacing=0.25,
                                 n_cols=1):
         # save params
         self.col_width = col_width
@@ -638,7 +651,7 @@ def plot_val_line(plot_dict={},
 
     if show_fig:
         plt.show()
-    
+
     return fig
 
 
@@ -691,8 +704,8 @@ def sns_plot_val_line(plot_dict,
         if moving_average_window is not None:
             if kwargs['plot_unfiltered_data']:
                 # plot unfiltered data
-                sns.lineplot(x='x_values', 
-                             y='y_values', 
+                sns.lineplot(x='x_values',
+                             y='y_values',
                              data=data,
                              color=color,
                              # style=True,
@@ -704,12 +717,12 @@ def sns_plot_val_line(plot_dict,
             # apply moving average
             data['y_values'] = data.y_values.rolling(moving_average_window).mean()
 
-        sns.lineplot(x='x_values', 
-                     y='y_values', 
+        sns.lineplot(x='x_values',
+                     y='y_values',
                      data=data,
                      color=color,
                      linewidth=linewidth,
-                     err_style='band', 
+                     err_style='band',
                      alpha=alpha,
                      ci=ci,
                      label=str(_class))
@@ -751,21 +764,21 @@ def sns_plot_val_line(plot_dict,
 
 class ExploreThenStrongBranch:
     """
-    This custom observation function class will randomly return either strong branching scores (expensive expert) 
+    This custom observation function class will randomly return either strong branching scores (expensive expert)
     or pseudocost scores (weak expert for exploration) when called at every node.
     """
     def __init__(self, expert_probability):
         self.expert_probability = expert_probability
         self.pseudocosts_function = ecole.observation.Pseudocosts()
         self.strong_branching_function = ecole.observation.StrongBranchingScores()
-    
+
     def before_reset(self, model):
         """
         This function will be called at initialization of the environments (before dynamics are reset).
         """
         self.pseudocosts_function.before_reset(model)
         self.strong_branching_function.before_reset(model)
-    
+
     def extract(self, model, done):
         """
         Should we return strong branching or pseudocost scores at time node?

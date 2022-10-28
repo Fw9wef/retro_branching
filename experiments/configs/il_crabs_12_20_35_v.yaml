@@ -18,9 +18,9 @@ instances:
 
 experiment:
   seed: 0
-  device: 'cuda:1'
-  path_to_load_imitation_data: './outputs/crabs_12_20_35_v/dataset/'
-  path_to_save: './outputs/crabs_12_20_35_v/il_scores/'
+  device: 'cuda:0'
+  path_to_load_imitation_data: './outputs/crabs_12_20_35_minimize/dataset/'
+  path_to_save: './outputs/crabs_12_20_35_minimize/il_scores/'
   branching: 'explore_then_strong_branch' # 'pure_strong_branch' 'explore_then_strong_branch'
   max_steps: null # None 3
   num_samples: 120000
