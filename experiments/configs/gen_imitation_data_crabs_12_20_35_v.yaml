@@ -18,7 +18,7 @@ instances:
 experiment:
   seed: 0
   path_to_save: './outputs/crabs_12_20_35_minimize'
-  num_cpus_factor: 4
+  num_cpus_factor: 16
   branching: 'explore_then_strong_branch' # 'pure_strong_branch' 'explore_then_strong_branch'
   min_samples: 126000
   max_steps: null # None 3
