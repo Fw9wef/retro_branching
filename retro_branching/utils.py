@@ -33,7 +33,7 @@ def generate_craballoc(
     *,
     p: float = 0.9,
     seed: int = None,
-    minimize: bool = True,
+    minimize: bool = False,
 ):
     while True:
         instance = FixedScheduleCRopt.generate(
